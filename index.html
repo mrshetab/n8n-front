@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+    }
+
+    .app {
+      background: white;
+      width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .option {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+
+    .option.selected {
+      background: #dbeafe;
+    }
+
+    .option.correct {
+      background: #bbf7d0;
+    }
+
+    .option.wrong {
+      background: #fecaca;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <button id="startBtn">Quiz</button>
+
+  <div id="quiz" class="hidden">
+    <h3 id="question"></h3>
+    <div id="options"></div>
+    <button id="actionBtn">Check</button>
+  </div>
+</div>
+
+<script>
+  const START_URL = "https://rezashetab.app.n8n.cloud/webhook-test/quiz?action=start";
+  const ANSWER_URL = "https://rezashetab.app.n8n.cloud/webhook-test/quiz?action=answer";
+
+  let currentQuestion = null;
+  let selectedIndex = null;
+
+  const startBtn = document.getElementById("startBtn");
+  const quizDiv = document.getElementById("quiz");
+  const questionEl = document.getElementById("question");
+  const optionsEl = document.getElementById("options");
+  const actionBtn = document.getElementById("actionBtn");
+
+  startBtn.onclick = startQuiz;
+  actionBtn.onclick = handleAction;
+
+  async function startQuiz() {
+    startBtn.classList.add("hidden");
+    quizDiv.classList.remove("hidden");
+    await loadQuestion();
+  }
+
+  async function loadQuestion() {
+    actionBtn.innerText = "Check";
+    actionBtn.disabled = false;
+    optionsEl.innerHTML = "";
+    selectedIndex = null;
+
+    const res = await fetch(START_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}"
+    });
+
+    const data = await res.json();
+    currentQuestion = data[0];
+
+    questionEl.innerText = currentQuestion.question;
+
+    currentQuestion.options.forEach((opt, index) => {
+      const div = document.createElement("div");
+      div.className = "option";
+      div.innerText = opt;
+      div.onclick = () => selectOption(div, index);
+      optionsEl.appendChild(div);
+    });
+  }
+
+  function selectOption(element, index) {
+    document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+    element.classList.add("selected");
+    selectedIndex = index;
+  }
+
+  async function handleAction() {
+    if (actionBtn.innerText === "Next") {
+      await loadQuestion();
+      return;
+    }
+
+    if (selectedIndex === null) {
+      alert("Please select an answer");
+      return;
+    }
+
+    actionBtn.innerText = "Checking...";
+    actionBtn.disabled = true;
+
+    const url =
+      `${ANSWER_URL}` +
+      `&user_answer=${selectedIndex}` +
+      `&sessionid=${currentQuestion.sessionId}`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}"
+    });
+
+    const result = await res.json(); // expects "correct" or "wrong"
+
+    const options = document.querySelectorAll(".option");
+    const correctIndex = currentQuestion.options.indexOf(currentQuestion.correct_answer);
+
+    options[correctIndex].classList.add("correct");
+
+    if (result !== "correct") {
+      options[selectedIndex].classList.add("wrong");
+    }
+
+    actionBtn.innerText = "Next";
+    actionBtn.disabled = false;
+  }
+</script>
+
+</body>
+</html>
