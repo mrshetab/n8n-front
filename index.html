@@ -74,7 +74,7 @@
 
   const startBtn = document.getElementById("startBtn");
   const quizDiv = document.getElementById("quiz");
-  const questionEl = document.getElementById("text");
+  const questionEl = document.getElementById("question");
   const optionsEl = document.getElementById("options");
   const actionBtn = document.getElementById("actionBtn");
 
@@ -102,7 +102,7 @@
     const data = await res.json();
     currentQuestion = data[0];
 
-    questionEl.innerText = currentQuestion.question;
+    questionEl.innerText = currentQuestion.text;
 
     currentQuestion.options.forEach((opt, index) => {
       const div = document.createElement("div");
