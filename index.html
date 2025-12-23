@@ -135,7 +135,7 @@
 
     const url =
       `${ANSWER_URL}` +
-      `&user_answer=${selectedIndex+1}` +
+      `&user_answer=${selectedIndex}` + 
       `&sessionid=${currentQuestion.sessionId}`;
 
     const res = await fetch(url, {
