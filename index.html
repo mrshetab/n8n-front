@@ -185,6 +185,7 @@
 
   async function handleAction() {
     if (actionBtn.innerText === "Next") {
+      showLoading();
       await loadQuestion();
       return;
     }
@@ -235,8 +236,10 @@
   }
 
   function hideLoading() {
-    loadingEl.classList.add("hidden");
-    contentEl.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      loadingEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
+    });
   }
 </script>
 
