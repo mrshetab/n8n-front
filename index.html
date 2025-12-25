@@ -142,35 +142,43 @@
   async function loadQuestion() {
     showLoading();
 
-    actionBtn.innerText = "Check";
-    actionBtn.disabled = false;
-    optionsEl.innerHTML = "";
-    selectedIndex = null;
+    try {
+      actionBtn.innerText = "Check";
+      actionBtn.disabled = false;
+      optionsEl.innerHTML = "";
+      selectedIndex = null;
 
-    const res = await fetch(START_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}"
-    });
+      const res = await fetch(START_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}"
+      });
 
-    const data = await res.json();
-    currentQuestion = data[0];
+      const data = await res.json();
+      currentQuestion = data[0];
 
-    questionEl.innerText = currentQuestion.text;
+      questionEl.innerText = currentQuestion.text;
 
-    currentQuestion.options.forEach((opt, index) => {
-      const div = document.createElement("div");
-      div.className = "option";
-      div.innerText = opt;
-      div.onclick = () => selectOption(div, index);
-      optionsEl.appendChild(div);
-    });
+      currentQuestion.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => selectOption(div, index);
+        optionsEl.appendChild(div);
+      });
 
-    hideLoading();
+    } catch (err) {
+      questionEl.innerText = "Failed to load question.";
+      console.error(err);
+    } finally {
+      hideLoading();
+    }
   }
 
   function selectOption(element, index) {
-    document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+    document.querySelectorAll(".option").forEach(o => {
+      o.classList.remove("selected", "correct", "wrong");
+    });
     element.classList.add("selected");
     selectedIndex = index;
   }
@@ -206,11 +214,14 @@
     const correctIndex =
       currentQuestion.options.indexOf(currentQuestion.correct_answer);
 
-    // Always show correct answer as GREEN
+    // Clear previous states
+    options.forEach(o => o.classList.remove("selected", "correct", "wrong"));
+
+    // Always mark correct answer GREEN
     options[correctIndex].classList.add("correct");
 
-    // If user was wrong, show their choice as RED
-    if (result !== "correct") {
+    // Mark wrong ONLY if selected answer is not correct
+    if (selectedIndex !== correctIndex) {
       options[selectedIndex].classList.add("wrong");
     }
 
