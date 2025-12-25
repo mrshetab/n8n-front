@@ -149,11 +149,11 @@
     const options = document.querySelectorAll(".option");
     const correctIndex = currentQuestion.options.indexOf(currentQuestion.correct_answer);
 
-    options[correctIndex].classList.add("correct");
-
     if (result !== "correct") {
       options[selectedIndex].classList.add("wrong");
     }
+
+    options[correctIndex].classList.add("correct");
 
     actionBtn.innerText = "Next";
     actionBtn.disabled = false;
